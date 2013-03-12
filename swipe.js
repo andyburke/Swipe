@@ -9,7 +9,9 @@
 function Swipe(container, options) {
 
   "use strict";
-
+  
+  var self = this;
+  
   // utilities
   var noop = function() {}; // simple no operation function
   var offloadFn = function(fn) { setTimeout(fn || noop, 0) }; // offload a functions execution
@@ -90,6 +92,8 @@ function Swipe(container, options) {
 
     if (options.continuous) slide(index-1);
     else if (index) slide(index-1);
+    
+    options.events && options.events.emit( 'prev', self );
 
   }
 
@@ -104,6 +108,8 @@ function Swipe(container, options) {
 
     // a simple positive modulo using slides.length
     return (slides.length + (index % slides.length)) % slides.length;
+
+    options.events && options.events.emit( 'next', self );
 
   }
 
@@ -148,6 +154,8 @@ function Swipe(container, options) {
 
     index = to;
     offloadFn(options.callback && options.callback(index, slides[index]));
+
+    options.events && options.events.emit( 'slide', self, index, slides[index] );
   }
 
   function move(index, dist, speed) {
@@ -174,7 +182,6 @@ function Swipe(container, options) {
     style.msTransform = 
     style.MozTransform = 
     style.OTransform = 'translateX(' + dist + 'px)';
-
   }
 
   function animate(from, to, speed) {
@@ -200,6 +207,7 @@ function Swipe(container, options) {
         if (delay) begin();
 
         options.transitionEnd && options.transitionEnd.call(event, index, slides[index]);
+        options.events && options.events.emit( 'transitionEnd', self, index, slides[index]);
 
         clearInterval(timer);
         return;
@@ -219,6 +227,7 @@ function Swipe(container, options) {
   function begin() {
 
     interval = setTimeout(next, delay);
+    options.events && options.events.emit( 'begin', self );
 
   }
 
@@ -226,6 +235,7 @@ function Swipe(container, options) {
 
     delay = 0;
     clearTimeout(interval);
+    options.events && options.events.emit( 'stop', self );
 
   }
 
@@ -428,7 +438,7 @@ function Swipe(container, options) {
         if (delay) begin();
 
         options.transitionEnd && options.transitionEnd.call(event, index, slides[index]);
-
+        options.events && options.events.emit( 'transitionEnd', self, index, slides[index] );
       }
 
     }
@@ -467,11 +477,7 @@ function Swipe(container, options) {
 
   // expose the Swipe API
   return {
-    setup: function() {
-
-      setup();
-
-    },
+    setup: setup,
     slide: function(to, speed) {
       
       // cancel slideshow
