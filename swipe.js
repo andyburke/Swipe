@@ -588,6 +588,9 @@ function Swipe(container, options) {
 
       }
 
+    },
+    slideCount: function() {
+      return slides.length;
     }
   }
 
