@@ -188,6 +188,10 @@ function Swipe(container, options) {
 
   }
 
+  function slideCount() {
+    return slides.length;
+  }  
+  
 
   // setup initial vars
   var start = {};
@@ -463,9 +467,7 @@ function Swipe(container, options) {
       }
 
     },
-    slideCount: function() {
-      return slides.length;
-    }
+    slideCount: slideCount
   }
 
 }
