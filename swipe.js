@@ -115,44 +115,79 @@ function Swipe(container, options) {
 
   function slide(to, slideSpeed) {
 
-    // do nothing if already on requested slide
-    if (index == to) return;
+    var toIndex = -1;
+
+    if ( typeof( to ) === 'number' )
+    {
+      toIndex = to;
+    }
+    else if ( typeof( to ) === 'string' )
+    {
+      for (var slideIndex = 0; slideIndex < slides.length; ++slideIndex)
+      {
+        var element = slides[slideIndex];
+        if (element.id === to)
+        {
+          toIndex = slideIndex;
+          break;
+        }
+      }      
+    }
+    else if ( to instanceof Element )
+    {
+      for (var slideIndex = 0; slideIndex < slides.length; ++slideIndex)
+      {
+        var element = slides[slideIndex];
+        if (element.id == id)
+        {
+          toIndex = slideIndex;
+          break;
+        }
+      }
+    }
+    else
+    {
+      throw "Invalid target type."
+    }
+    
+    // return if we can't find the element they're talking about, or if we're already there
+    if ( toIndex == -1 || toIndex == index ) return false;
     
     if (browser.transitions) {
 
-      var direction = Math.abs(index-to) / (index-to); // 1: backward, -1: forward
+      var direction = Math.abs( toIndex - index ) / ( toIndex - index ); // 1: backward, -1: forward
 
       // get the actual position of the slide
       if (options.continuous) {
         var natural_direction = direction;
-        direction = -slidePos[circle(to)] / width;
+        direction = -slidePos[circle(index)] / width;
 
         // if going forward but to < index, use to = slides.length + to
         // if going backward but to > index, use to = -slides.length + to
-        if (direction !== natural_direction) to =  -direction * slides.length + to;
+        if (direction !== natural_direction) index =  -direction * slides.length + index;
 
       }
 
-      var diff = Math.abs(index-to) - 1;
+      var diff = Math.abs( toIndex - index ) - 1;
 
       // move all the slides between index and to in the right direction
-      while (diff--) move( circle((to > index ? to : index) - diff - 1), width * direction, 0);
+      while (diff--) move( circle(( toIndex > index ? toIndex : index) - diff - 1), width * direction, 0);
             
-      to = circle(to);
+      index = circle( toIndexndex );
 
       move(index, width * direction, slideSpeed || speed);
-      move(to, 0, slideSpeed || speed);
+      move(toIndex, 0, slideSpeed || speed);
 
-      if (options.continuous) move(circle(to - direction), -(width * direction), 0); // we need to get the next in place
+      if (options.continuous) move(circle(index - direction), -(width * direction), 0); // we need to get the next in place
       
     } else {     
       
-      to = circle(to);
-      animate(index * -width, to * -width, slideSpeed || speed);
+      index = circle(toIndex);
+      animate(index * -width, toIndex * -width, slideSpeed || speed);
       //no fallback for a circular continuous if the browser does not accept transitions
     }
 
-    index = to;
+    index = toIndex;
     offloadFn(options.callback && options.callback(index, slides[index]));
 
     options.events && options.events.emit( 'slide', self, index, slides[index] );
